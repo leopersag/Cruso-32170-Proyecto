@@ -5,7 +5,7 @@ const Contenedor = require('../models/ProductContenedorMongoDB');
 const productContenedorMongoDB = new Contenedor();
 
 const carritoSchema = new mongoose.Schema({
-    productos: {type: Object, required: true},
+    productos: {type: Array, required: true},
     timestamp: {type: Date, required: true},
 });
 
@@ -69,12 +69,12 @@ class CarritoContenedorMongoDB {
             try{
                 const idProducto = await CarritosDAO.deleteOne({_id: id});
                 if (idProducto.acknowledged & idProducto.deletedCount === 0){
-                    return {'error': 'Producto borrado anteriormente'}
+                    return {'error': 'Carrito borrado anteriormente'}
                 }else {
-                    return (`Producto '${id}' borrado`)
+                    return (`Carrito '${id}' borrado`)
                 }
             }catch {
-                return {'error': 'Producto no encontrado'};
+                return {'error': 'Carrito no encontrado'};
             } finally {
                 await mongoose.disconnect();
             }
@@ -83,27 +83,25 @@ class CarritoContenedorMongoDB {
         }
     }
 
-    //Algo no funciona... REVISAR
     async addProductById(id, product) {
         try {
             await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
             try{
-                let productosCarrito = await CarritosDAO.find({_id: id},{productos:1, _id:0});
-                console.log(productosCarrito);
-                let producto = await productContenedorMongoDB.getById(product);
-                console.log(producto);
-                if(producto.error){
-                    return {'error': 'Producto no encontrado'};
+                let productosCarrito = await CarritosDAO.findOne({_id: id});
+                let producto = await productContenedorMongoDB.getById(product.id);
+                if(producto){
+                    productosCarrito.productos.push(producto[0]);
+                    productosCarrito.timestamp = new Date();
+                    console.log(productosCarrito);
+                    await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
+                    await CarritosDAO.updateOne({_id: id}, productosCarrito);
+                    return (`Carrito '${id}' actualizado`);
                 }else{
-                    console.log("estoy aca");
-                   //productosCarrito.productos.push(producto[0]);
-                   //await CarritosDAO.updateOne({_id: id}, {$set: {productos: productosCarrito}});
-                   let newTime = new Date();
-                   await CarritosDAO.updateOne({_id: id}, {$set: {"timestamp": newTime}});
+                    return {'error': 'Producto no encontrado'};
                 }
-                return (`Carrito '${id}' actualizado`);
             }catch (error){
-                return {'error': error};
+                console.log(error.message);
+                return {"error":error}
             } finally {
                 await mongoose.disconnect();
             }
@@ -112,27 +110,23 @@ class CarritoContenedorMongoDB {
         }
     }
 
-    //Algo no funciona... REVISAR
     async delProductFromCarrt(idCarrito,idProducto){
         try {
             await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
             try{
-                let carrito = await CarritosDAO.find({_id: idCarrito});
-                let producto = carrito[0].productos;
-                console.log(producto);
-                if(carrito[0].productos.find(e=>e.id === idProducto)){
-                    console.log("estoy aca");
+                let carrito = await CarritosDAO.findOne({_id: idCarrito});
+                if(carrito.productos.find(e=>e._id == idProducto)){
                     carrito.productos.splice(carrito.productos.findIndex(e => e.id === idProducto),1);
-                    let timestamp = new Date();
-                    //await CarritosDAO.updateOne({_id: idCarrito}, {$set: {productos: carrito}});
-                    //await CarritosDAO.updateOne({_id: idCarrito}, {$set: {timestamp: timestamp}});
-                    return;
+                    carrito.timestamp = new Date();
+                    console.log(carrito);
+                    await CarritosDAO.updateOne({_id: idCarrito}, carrito);
+                    return (`Producto ${idProducto} borrado del carrito ${idCarrito}`);
                 }else{
                     return {'error': 'Producto no encontrado'};  
                 }
                 
-            }catch {
-                return {'error': 'Carrito NO encontrado'};
+            }catch (error){
+                console.log(error.message);;
             } finally {
                 await mongoose.disconnect();
             }

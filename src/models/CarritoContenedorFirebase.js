@@ -1,15 +1,9 @@
-/* const mongoose = require('mongoose');
 
-const carritoSchema = new mongoose.Schema({
-    productos: {type: Object, required: true},
-    timestamp: {type: Date, required: true},
-});
+    const admin =  require("firebase-admin")
+    const db =  admin.firestore();
+    const query = db.collection('carritos');
+    const queryProductos = db.collection('productos');
 
-const CarritosDAO = mongoose.model('carritos',carritoSchema);
-const URL = 'mongodb+srv://user:user@cluster0.krw096n.mongodb.net/ecommerce?retryWrites=true&w=majority';
-*/
-
-//Se importa ProductContenedorFirebase para utilizar la clase 'Contenedor'
 const Contenedor = require('../models/ProductContenedorFirebase');
 const productContenedorFirebase = new Contenedor();
 
@@ -17,31 +11,27 @@ class CarritoContenedorFirebase {
     
     async save(objeto) {
         try {
-            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
-            try{
-                let carrito = {productos: objeto, timestamp: new Date()}
-                const idCarrito = await CarritosDAO.create(carrito);
-                return idCarrito
-            }catch {
-                return {'error': 'Faltan campos requeridos'};
-            } finally {
-                await mongoose.disconnect();
-            }
+            const doc = query.doc();
+            const carrito = {};
+            carrito.productos = objeto;
+            carrito.timestamp = new Date();
+            await doc.create(carrito);
+            carrito.id = doc.id
+            return carrito;
         } catch (error) {
-            console.log(`Error de conexión a la base de datos ${error}`);       
+            console.log(error.message);       
         }
     }
 
     async getById(id) {
         try {
-            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
-            try{
-                const producto = await CarritosDAO.find({_id: id},{productos:1, _id:0});
-                return producto
-            }catch {
-                return {'error': 'Producto no encontrado'};
-            } finally {
-                await mongoose.disconnect();
+            const item = await query.doc(id).get()
+            const carrito = item.data();
+            if(carrito){
+                carrito.id = item.id;
+                return carrito;
+            }else{
+                return {"error": "Carrito no encontrado"};
             }
         } catch (error) {
             console.log(`Error de conexión a la base de datos ${error}`);       
@@ -50,15 +40,14 @@ class CarritoContenedorFirebase {
 
     async getAll() {
         try {
-            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
-            try{
-                const productos = await CarritosDAO.find({});
-                return productos
-            }catch (error){
-                console.log(`Error en operación de base de datos ${error}`);
-            } finally {
-                await mongoose.disconnect();
-            }
+            const querySnapshot = await query.get();
+            let docs = querySnapshot.docs;
+            const response = docs.map((carr) => ({
+                id: carr.id,
+                productos: carr.data().productos,
+                timestamp: carr.data().timestamp
+            }));
+            return response;
         } catch (error) {
             console.log(`Error de conexión a la base de datos ${error}`);       
         }
@@ -66,73 +55,54 @@ class CarritoContenedorFirebase {
 
     async deleteById(id) {
         try {
-            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
-            try{
-                const idProducto = await CarritosDAO.deleteOne({_id: id});
-                if (idProducto.acknowledged & idProducto.deletedCount === 0){
-                    return {'error': 'Producto borrado anteriormente'}
-                }else {
-                    return (`Producto '${id}' borrado`)
-                }
-            }catch {
-                return {'error': 'Producto no encontrado'};
-            } finally {
-                await mongoose.disconnect();
-            }
+            const item = query.doc(id);
+            const carrito = await item.get();
+            if(carrito.data()){
+                await item.delete();
+                return (`Carrito ${id} borrado`)
+            }else{
+                return {"error": "Carrito no encontrado"};
+            };
         } catch (error) {
             console.log(`Error de conexión a la base de datos ${error}`);       
         }
     }
 
-    //Algo no funciona... REVISAR
-    async addProductById(id, product) {
+    async addProductById(carritoId, productoId) {
         try {
-            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
-            try{
-                let productosCarrito = await CarritosDAO.find({_id: id},{productos:1, _id:0});
-                let producto = await productContenedorFirebase.getById(product);
-                if(producto.error){
-                    return {'error': 'Producto no encontrado'};
+            const doc = query.doc(carritoId);
+            let carrito = await doc.get();
+
+            if(carrito.data()){
+                let carritoProductos = carrito.data().productos;
+                console.log(carritoProductos);
+                let item = await productContenedorFirebase.getById(productoId.id);
+                let newCarrito = {item, carritoProductos}
+                if(item.error){
+                    return item;
                 }else{
-                   //productosCarrito.productos.push(producto[0]);
-                   //await CarritosDAO.updateOne({_id: id}, {$set: {productos: productosCarrito}});
-                   let newTime = new Date();
-                   await CarritosDAO.updateOne({_id: id}, {$set: {"timestamp": newTime}});
+                    await doc.update({productos: newCarrito, timestamp: new Date() });
+                    return (`Carrito '${carritoId}' actualizado`);
                 }
-                return (`Carrito '${id}' actualizado`);
-            }catch {
-                return {'error': 'Producto NO encontrado'};
-            } finally {
-                await mongoose.disconnect();
+            }else{
+                return {"error": "Carrito no encontrado"};
             }
         } catch (error) {
             console.log(`Error de conexión a la base de datos ${error}`);       
         }
     }
 
-    //Algo no funciona... REVISAR
     async delProductFromCarrt(idCarrito,idProducto){
         try {
-            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
-            try{
-                let carrito = await CarritosDAO.find({_id: idCarrito});
-                let producto = carrito[0].productos;
-                console.log(producto);
-                if(carrito[0].productos.find(e=>e.id === idProducto)){
-                    console.log("estoy aca");
-                    carrito.productos.splice(carrito.productos.findIndex(e => e.id === idProducto),1);
-                    let timestamp = new Date();
-                    //await CarritosDAO.updateOne({_id: idCarrito}, {$set: {productos: carrito}});
-                    //await CarritosDAO.updateOne({_id: idCarrito}, {$set: {timestamp: timestamp}});
-                    return;
-                }else{
-                    return {'error': 'Producto no encontrado'};  
-                }
-                
-            }catch {
-                return {'error': 'Carrito NO encontrado'};
-            } finally {
-                await mongoose.disconnect();
+            const doc = query.doc(idCarrito);
+            let carrito = await doc.get();
+            console.log(carrito);
+            if(carrito.data()){
+                let carritoProductos = carrito.data().productos;
+                carritoProductos.splice(carritoProductos.findIndex((e) => e.id == idProducto),1);
+                await doc.update({productos: carritoProductos, timestamp: new Date()});                
+            }else{
+                return {"error": "Carrito no encontrado"};
             }
         } catch (error) {
             console.error(error);            

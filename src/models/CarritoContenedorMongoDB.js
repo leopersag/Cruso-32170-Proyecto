@@ -92,7 +92,6 @@ class CarritoContenedorMongoDB {
                 if(producto){
                     productosCarrito.productos.push(producto[0]);
                     productosCarrito.timestamp = new Date();
-                    console.log(productosCarrito);
                     await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
                     await CarritosDAO.updateOne({_id: id}, productosCarrito);
                     return (`Carrito '${id}' actualizado`);
@@ -118,7 +117,6 @@ class CarritoContenedorMongoDB {
                 if(carrito.productos.find(e=>e._id == idProducto)){
                     carrito.productos.splice(carrito.productos.findIndex(e => e.id === idProducto),1);
                     carrito.timestamp = new Date();
-                    console.log(carrito);
                     await CarritosDAO.updateOne({_id: idCarrito}, carrito);
                     return (`Producto ${idProducto} borrado del carrito ${idCarrito}`);
                 }else{

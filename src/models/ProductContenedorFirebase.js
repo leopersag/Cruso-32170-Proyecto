@@ -1,80 +1,75 @@
-/* const mongoose = require('mongoose');
+// Conexión a la base de datos de Firebase
+    const admin =  require("firebase-admin");
+    const serviceAccount = require("../../database/firebaaseCredentials.json");
 
-const productoSchema = new mongoose.Schema({
-    title: {type: String, required: true},
-    price: {type: Number, required: true},
-    thumbnail: {type: String, required: true},
-    Stock: {type: Number, required: true}
-});
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+    });
 
-const ProductosDAO = mongoose.model('productos',productoSchema);
-const URL = 'mongodb+srv://user:user@cluster0.krw096n.mongodb.net/ecommerce?retryWrites=true&w=majority';
- */
+    console.log("Base Firebase conectada");
+
+    const db =  admin.firestore();
+    const query = db.collection('productos');
+
 class ProductContenedorFirebase {
 
     async save(objeto) {
         try {
-            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
-            try{
-                const id = await ProductosDAO.create(objeto);
-                return id
-            }catch {
-                return {'error': 'Faltan campos requeridos'};
-            } finally {
-                await mongoose.disconnect();
-            }
+            const doc = query.doc();
+            await doc.create(objeto);
+
+            const id = doc.id
+            console.log(`Producto ${id} creado`);
+            return id;
+
         } catch (error) {
-            console.log(`Error de conexión a la base de datos ${error}`);       
+            console.log(`Error:${error.message}`);       
         }
     }
-
+ 
     async getById(id) {
         try {
-            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
-            try{
-                const producto = await ProductosDAO.find({_id: id});
+            const item = await query.doc(id).get();
+            const producto = item.data();
+            if(producto){
+                producto.id = item.id;
                 return producto
-            }catch {
-                return {'error': 'Producto no encontrado'};
-            } finally {
-                await mongoose.disconnect();
+            }else {
+                return {"error": "Producto no encontrado"};
             }
         } catch (error) {
-            console.log(`Error de conexión a la base de datos ${error}`);       
+            console.log(`Error:  ${error}`);       
         }
     }
 
     async getAll() {
         try {
-            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
-            try{
-                const productos = await ProductosDAO.find({});
-                return productos
-            }catch (error){
-                console.log(`Error en operación de base de datos ${error}`);
-            } finally {
-                await mongoose.disconnect();
-            }
+            const querySnapshot = await query.get();
+            let docs = querySnapshot.docs;
+
+            const response = docs.map((elem) => ({
+                id: elem.id,
+                title: elem.data().title,
+                price: elem.data().price,
+                thumbnail: elem.data().thumbnail,
+                Stock: elem.data().Stock
+            }));
+            return response;
         } catch (error) {
-            console.log(`Error de conexión a la base de datos ${error}`);       
+            console.log(`Error: ${error}`);       
         }
     } 
 
     async deleteById(id) {
         try {
-            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
-            try{
-                const idProducto = await ProductosDAO.deleteOne({_id: id});
-                if (idProducto.acknowledged & idProducto.deletedCount === 0){
-                    return {'error': 'Producto borrado anteriormente'}
-                }else {
-                    return (`Producto '${id}' borrado`)
-                }
-            }catch {
-                return {'error': 'Producto no encontrado'};
-            } finally {
-                await mongoose.disconnect();
-            }
+            const doc = query.doc(id);
+            const product = await doc.get();
+            if (product.data()){
+                await doc.delete();
+                return (`Producto '${id}' borrado`)
+            }else{
+                return {"error": "Producto no encontrado"};
+            };
         } catch (error) {
             console.log(`Error de conexión a la base de datos ${error}`);       
         }
@@ -82,17 +77,16 @@ class ProductContenedorFirebase {
 
     async update(id, product) {
         try {
-            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
-            try{
-                await ProductosDAO.updateOne({_id: id},product);
+            const doc = query.doc(id);
+            const prod = await doc.get();
+            if(prod.data()){
+                await doc.update(product);
                 return (`Producto '${id}' actualizado`);
-            }catch {
-                return {'error': 'Producto no encontrado'};
-            } finally {
-                await mongoose.disconnect();
-            }
+             }else{
+                return {"error": "Producto no encontrado"};
+             };
         } catch (error) {
-            console.log(`Error de conexión a la base de datos ${error}`);       
+            console.log(`Error de conexión a la base de datos ${error}`);
         }
     }
 }

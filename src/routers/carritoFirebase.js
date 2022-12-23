@@ -6,8 +6,7 @@ const Contenedor = require('../models/CarritoContenedorFirebase');
 const CarritoContenedorFirebase = new Contenedor ();
 
 carritoRouterFirebase.post('/', async (req,res) => {
-    let carrito = {...req.body};
-    let newCarrito = await CarritoContenedorFirebase.save(carrito);
+    let newCarrito = await CarritoContenedorFirebase.save(req.body);
     res.json(newCarrito);
     console.log('Id del carrito creado:',newCarrito.id);
 });

@@ -68,20 +68,19 @@ class CarritoContenedorFirebase {
         }
     }
 
+    
     async addProductById(carritoId, productoId) {
         try {
             const doc = query.doc(carritoId);
             let carrito = await doc.get();
-
             if(carrito.data()){
                 let carritoProductos = carrito.data().productos;
-                console.log(carritoProductos);
                 let item = await productContenedorFirebase.getById(productoId.id);
-                let newCarrito = {item, carritoProductos}
                 if(item.error){
                     return item;
                 }else{
-                    await doc.update({productos: newCarrito, timestamp: new Date() });
+                    carritoProductos.push(item);
+                    await doc.update({productos: carritoProductos, timestamp: new Date() });
                     return (`Carrito '${carritoId}' actualizado`);
                 }
             }else{
@@ -96,7 +95,6 @@ class CarritoContenedorFirebase {
         try {
             const doc = query.doc(idCarrito);
             let carrito = await doc.get();
-            console.log(carrito);
             if(carrito.data()){
                 let carritoProductos = carrito.data().productos;
                 carritoProductos.splice(carritoProductos.findIndex((e) => e.id == idProducto),1);

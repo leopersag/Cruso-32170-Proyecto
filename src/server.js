@@ -12,6 +12,19 @@
     const vars = require ('./config/config');
     const { SECRET, MONGO_URL, COOKIE_TIME } = vars;
 
+// Nodemailer
+const { createTransport } = require ('nodemailer');
+
+const TEST_MAIL = 'ethel.legros@ethereal.email'
+const transporter = createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    auth: {
+        user: TEST_MAIL,
+        pass: 'ywFkCDVuw36gThTJ3t'
+    }
+});
+
 // Bcrypt
     const bCrypt = require ('bcrypt');
     
@@ -57,6 +70,20 @@
             if (resultado == false) {
                 logger.error('Error in SingUp');
                 return done(null, false);
+            }
+
+            const mailOptions = {
+                from: 'Leonardo@PerSag.com',
+                to: TEST_MAIL,
+                subject: 'Nuevo registro',
+                text: JSON.stringify(user),
+                html: `<p>${JSON.stringify(user)}</p>`
+            };
+            
+            try {
+                await transporter.sendMail(mailOptions);
+            } catch (error) {
+                logger.error(error);
             }
 
             return done(null, user);
@@ -120,7 +147,7 @@
                     logger.warn("Invalid type of file")
                     return done (null, false);
                 }
-             })
+             });
             
             // Inicialización app con express
             const app = express();
@@ -232,12 +259,11 @@
                 req.user.contador++;
                 let listaProductos = await productContenedorMongoDB.getAll();
                 const usuarios = await usersContenedorMongoDB.getAll();
-                logger.error (usuarios.find((usuario) => usuario.email == req.user).avatar);
                 res.render('pages/index', 
                     {
                         user: usuarios.find((usuario) => usuario.email == req.user).email,
                         lista: listaProductos,
-                        //avatar: usuarios.find((usuario) => usuario.email == req.user).avatar,
+                        avatar: usuarios.find((usuario) => usuario.email == req.user).avatar,
                     }
                 )
             });
@@ -250,7 +276,7 @@
                 }
                 req.session.contador++;
                 res.redirect('/datos');
-            });
+            }); 
 
         // En caso de que la ruta no esté asignada
             app.all('*',(req,res) => {

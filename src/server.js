@@ -10,20 +10,33 @@
 
 // Variables de Entorno
     const vars = require ('./config/config');
-    const { SECRET, MONGO_URL, COOKIE_TIME } = vars;
+    const { SECRET, MONGO_URL, COOKIE_TIME, TWILIO_ACCOUNTSID, TWILIO_AUTH_TOKEN, TWILIO_FROM, TWILIO_TO} = vars;
 
 // Nodemailer
-const { createTransport } = require ('nodemailer');
+    const { createTransport } = require ('nodemailer');
 
-const TEST_MAIL = 'ethel.legros@ethereal.email'
-const transporter = createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    auth: {
-        user: TEST_MAIL,
-        pass: 'ywFkCDVuw36gThTJ3t'
-    }
-});
+    const TEST_MAIL = 'ethel.legros@ethereal.email'
+    const transporter = createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        auth: {
+            user: TEST_MAIL,
+            pass: 'ywFkCDVuw36gThTJ3t'
+        }
+    });
+
+// Twilio (Whatsapp)
+    const client = require('twilio')(TWILIO_ACCOUNTSID, TWILIO_AUTH_TOKEN);
+
+    try {
+        client.messages.create({
+            body: 'HOla, tu pedido está listo',
+            from: TWILIO_FROM,
+            to: TWILIO_TO,
+        })
+    } catch (error) {
+        logger.error(error)
+    }; 
 
 // Bcrypt
     const bCrypt = require ('bcrypt');

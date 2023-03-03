@@ -4,6 +4,8 @@
     const usersContenedorMongoDB = new usersContenedor();
     const productContenedor = require('./models/ProductContenedorMongoDB');
     const productContenedorMongoDB = new productContenedor();
+    const carritoContenedor = require('./models/CarritoContenedorMongoDB');
+    const carritoContenedorMongoDB = new carritoContenedor();
 
 // Log4js
     const logger  = require ('./config/log4js');
@@ -27,16 +29,6 @@
 
 // Twilio (Whatsapp)
     const client = require('twilio')(TWILIO_ACCOUNTSID, TWILIO_AUTH_TOKEN);
-
-    try {
-        client.messages.create({
-            body: 'HOla, tu pedido está listo',
-            from: TWILIO_FROM,
-            to: TWILIO_TO,
-        })
-    } catch (error) {
-        logger.error(error)
-    }; 
 
 // Bcrypt
     const bCrypt = require ('bcrypt');
@@ -219,6 +211,15 @@
             app.use('/firebase/carrito', carritoRouterFirebase);
         */
 
+        // Funcion de validación de autenticación
+            function isAuth (req, res, next) {
+                if (req.isAuthenticated()) {
+                    next();
+                } else {
+                    res.redirect('/login');
+                }
+            };
+
         // End Points
             // Registro
             app.get('/register', (req, res) => {
@@ -254,16 +255,8 @@
                     res.render('pages/Auth/logout', {user: req.user});
                 });
             });
-
+            
             // Datos
-            function isAuth (req, res, next) {
-                if (req.isAuthenticated()) {
-                    next();
-                } else {
-                    res.redirect('/login');
-                }
-            };
-
             app.get('/datos', isAuth, async (req, res) => {
                 if (!req.user.contador) {
                     req.user.contador = 0;
@@ -272,13 +265,61 @@
                 req.user.contador++;
                 let listaProductos = await productContenedorMongoDB.getAll();
                 const usuarios = await usersContenedorMongoDB.getAll();
+                const usuario = usuarios.find((usuario) => usuario.email == req.user);
                 res.render('pages/index', 
                     {
-                        user: usuarios.find((usuario) => usuario.email == req.user).email,
+                        user: usuario.email,
                         lista: listaProductos,
-                        avatar: usuarios.find((usuario) => usuario.email == req.user).avatar,
+                        avatar: usuario.avatar,
                     }
                 )
+            });
+
+            // Carrito
+            app.get('/carrito', isAuth, async (req, res) => {
+                let listaCarrito = await carritoContenedorMongoDB.getAll();
+                const usuarios = await usersContenedorMongoDB.getAll();
+                const usuario = usuarios.find((usuario) => usuario.email == req.user);
+                res.render('pages/carrito',
+                    {
+                        name: usuario.name,
+                        user: usuario.email,
+                        lista: listaCarrito[0].productos,
+                        avatar: usuario.avatar,
+                    }
+                )
+            });
+
+            // Compra Out
+            app.get('/compraOut', isAuth, async (req, res) => {
+                let listaCarrito = await carritoContenedorMongoDB.getAll();
+                const usuarios = await usersContenedorMongoDB.getAll();
+                const usuario = usuarios.find((usuario) => usuario.email == req.user);
+                
+                const mailOptions = {
+                    from: 'Leonardo@PerSag.com',
+                    to: TEST_MAIL,
+                    subject: `Nuevo pedido de ${usuario.name} (${usuario.email})`,
+                    text: JSON.stringify(listaCarrito),
+                    html: `<p>${JSON.stringify(listaCarrito)}</p>`
+                };
+                
+                try {
+                    await transporter.sendMail(mailOptions);
+                } catch (error) {
+                    logger.error(error);
+                };
+
+                try {
+                    client.messages.create({
+                        body: `Nuevo pedido de ${usuario.name} (${usuario.email})`,
+                        from: TWILIO_FROM,
+                        to: TWILIO_TO,
+                    })
+                } catch (error) {
+                    logger.error(error)
+                }; 
+                res.render('pages/Auth/compraOut', {user: req.user});
             });
 
             app.get('/', (req, res) => {

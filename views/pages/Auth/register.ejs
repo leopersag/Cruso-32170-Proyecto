@@ -30,9 +30,13 @@
                 </div>
             </div>
             <div class="row p-2 justify-content-center">
-                <div class="col-4">
+                <div class="col-2">
                     <label for="age" class="visually-hidden">Edad</label>
                     <input type="number" class="form-control" name="age" id="age" autocomplete="age" placeholder="Edad">
+                </div>
+                <div class="col-2">
+                    <label for="countryCode" class="visually-hidden">Telefono</label>
+                    <%- include('../../partials/countryCodes'); %>
                 </div>
                 <div class="col-4">
                     <label for="phone" class="visually-hidden">Telefono</label>

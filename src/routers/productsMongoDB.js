@@ -1,33 +1,15 @@
 const { Router } = require ('express');
 const productRouterMongoDB = Router();
+const productoController = require('../controllers/productsMongoDB.controller')
 
-//Se importa ProductContenedorMongoDB para utilizar la clase 'Contenedor'
-const Contenedor = require('../models/ProductContenedorMongoDB');
-const productContenedorMongoDB = new Contenedor();
+productRouterMongoDB.get('/', productoController.getAllProducts);
 
-productRouterMongoDB.get('/', async (req, res) => {
-    const productList = await productContenedorMongoDB.getAll();
-    res.json(productList);
-});
+productRouterMongoDB.get('/:id', productoController.getByIdProducts);
 
-productRouterMongoDB.get('/:id', async (req, res) => {
-    const productList = await productContenedorMongoDB.getById(req.params.id);
-    res.json(productList);
-});
+productRouterMongoDB.post('/', productoController.saveProducts);
 
-productRouterMongoDB.post('/', async (req, res) => {
-    const productId = await productContenedorMongoDB.save(req.body);
-    res.json(productId);
-});
+productRouterMongoDB.delete('/:id', productoController.deleteByIdProducts);
 
-productRouterMongoDB.delete('/:id', async (req, res) => {
-    const productId = await productContenedorMongoDB.deleteById(req.params.id);    
-    res.json(productId);
-});
-
-productRouterMongoDB.put('/:id', async (req, res) => {
-    const productId = await productContenedorMongoDB.update(req.params.id, req.body);    
-    res.json(productId);
-});
+productRouterMongoDB.put('/:id', productoController.updateProducts);
 
 module.exports = productRouterMongoDB;

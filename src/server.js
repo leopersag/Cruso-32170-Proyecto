@@ -187,7 +187,7 @@
             app.set('view engine', 'ejs');
 
         // Utilización de Routers
-            /* 
+            /*             
             //Router de archivos
             const productRouter = require('./routers/products');
             const carritoRouter = require('./routers/carrito');
@@ -197,19 +197,19 @@
             // Router de MySQL
             const productRouterSQL = require ('./routers/productsSQL');
             app.use('/api/products', productRouterSQL)
-
+            */
             // Router de MongoDB
             const productRouterMongoDB = require ('./routers/productsMongoDB');
             app.use('/mongo/products', productRouterMongoDB);
             const carritoRouterMongoDB = require('./routers/carritoMongoDB');
             app.use('/mongo/carrito', carritoRouterMongoDB);
-
+            /* 
             // Router de Firebase
             const productRouterFirebase = require ('./routers/productsFirebase');
             app.use('/firebase/products', productRouterFirebase);
             const carritoRouterFirebase = require('./routers/carritoFirebase');
             app.use('/firebase/carrito', carritoRouterFirebase);
-        */
+            */
 
         // Funcion de validación de autenticación
             function isAuth (req, res, next) {

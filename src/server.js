@@ -49,10 +49,8 @@
 
         // Express
             const express = require ('express');
-            const session = require ('express-session');
             const cookieParser = require ('cookie-parser');
-            const MongoStore = require ('connect-mongo');
-            const advancedOptions = {useNewUrlParser: true, useUnifiedTopology: true};
+            const session = require ('./config/session');
 
             // Multer
             const multer  = require('multer');
@@ -80,18 +78,7 @@
             app.use(express.json());
             app.use(express.urlencoded ({extended: true}));
             app.use(cookieParser());
-            app.use(session({
-                store: MongoStore.create({
-                    mongoUrl: MONGO_URL,
-                    mongoOptions: advancedOptions,
-                    ttl: 60,
-                }),
-                secret: SECRET,
-                resave: false,
-                saveUninitialized: false,
-                rolling: true,
-                cookie: { maxAge: COOKIE_TIME },
-            }));
+            app.use(session);
 
             app.use(passport.initialize());
             app.use(passport.session());

@@ -38,3 +38,5 @@
 [2023-03-01T21:08:36.964] [ERROR] default - public\uploads\c93b56510c2b489760fe495752c4e1a5
 [2023-03-01T21:26:37.720] [ERROR] default - public\uploads\c93b56510c2b489760fe495752c4e1a5
 [2023-03-01T21:28:11.365] [ERROR] default - public\uploads\c93b56510c2b489760fe495752c4e1a5
+[2023-03-12T16:59:09.087] [ERROR] default - ReferenceError: transporter is not defined
+    at Strategy._verify (C:\Users\lperalta\Documents\Coderhouse\4-cursobe-32170\Proyecto\src\config\passport.js:58:17)

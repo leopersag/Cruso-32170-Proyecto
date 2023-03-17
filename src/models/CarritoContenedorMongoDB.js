@@ -1,15 +1,16 @@
 const mongoose = require('mongoose');
+const CarritosDAO = require('../daos/carritoDaoMongoDB')
 
 //Se importa ProductContenedorMongoDB para utilizar la clase 'Contenedor'
 const Contenedor = require('../models/ProductContenedorMongoDB');
 const productContenedorMongoDB = new Contenedor();
 
-const carritoSchema = new mongoose.Schema({
+/* const carritoSchema = new mongoose.Schema({
     productos: {type: Array, required: true},
     timestamp: {type: Date, required: true},
 });
 
-const CarritosDAO = mongoose.model('carritos',carritoSchema);
+const CarritosDAO = mongoose.model('carritos',carritoSchema); */
 const URL = 'mongodb+srv://user:user@cluster0.krw096n.mongodb.net/ecommerce?retryWrites=true&w=majority';
 
 class CarritoContenedorMongoDB {

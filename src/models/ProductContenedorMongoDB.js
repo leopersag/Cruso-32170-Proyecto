@@ -1,13 +1,5 @@
 const mongoose = require('mongoose');
-
-const productoSchema = new mongoose.Schema({
-    title: {type: String, required: true},
-    price: {type: Number, required: true},
-    thumbnail: {type: String, required: true},
-    Stock: {type: Number, required: true}
-});
-
-const ProductosDAO = mongoose.model('productos',productoSchema);
+const ProductosDAO = require('../daos/productDaoMongoDB');
 const URL = 'mongodb+srv://user:user@cluster0.krw096n.mongodb.net/ecommerce?retryWrites=true&w=majority';
 
 class ProductContenedorMongoDB {

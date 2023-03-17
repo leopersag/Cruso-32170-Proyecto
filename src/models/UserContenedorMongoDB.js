@@ -1,16 +1,5 @@
 const mongoose = require('mongoose');
-
-const usuariosSchema = new mongoose.Schema({
-    name: {type: String, required: true},
-    address: {type: String, required: true},
-    age: {type: Number, required: true},
-    phone: {type: Number, required: true},
-    avatar: {type: String, required: true},
-    password: {type: String, required: true},
-    email: {type: String, required: true},
-});
-
-const UsuariosDAO = mongoose.model('usuarios',usuariosSchema);
+const UsuariosDAO = require('../daos/userDaoMongoDB');
 const URL = 'mongodb+srv://user:user@cluster0.krw096n.mongodb.net/ecommerce?retryWrites=true&w=majority';
 
 class userContenedorMongoDB {

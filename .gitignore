@@ -1,1 +1,14 @@
 node_modules
+public/index.html
+public/index.js
+src/models/CarritoContenedor.js
+src/models/CarritoContenedorFirebase.js
+src/models/ProductContenedor.js
+src/models/ProductContenedorFirebase
+src/models/ProductContenedorSQL.js
+src/repository
+src/routers/carrito.js
+src/routers/carritoFirebase.js
+src/routers/products.js
+src/routers/productsFirebase.js
+src/routers/productsSQL.js

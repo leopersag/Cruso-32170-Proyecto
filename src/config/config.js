@@ -8,6 +8,7 @@ const vars = {
     TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
     TWILIO_FROM: process.env.TWILIO_FROM,
     TWILIO_TO: process.env.TWILIO_TO,
+    TEST_MAIL: process.env.TEST_MAIL,
 };
 
 module.exports = vars;

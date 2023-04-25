@@ -1,5 +1,7 @@
 const Contenedor = require('../models/ProductContenedorMongoDB');
 const productContenedorMongoDB = new Contenedor();
+const carritoContenedor = require('../models/CarritoContenedorMongoDB');
+const carritoContenedorMongoDB = new carritoContenedor();
 
 exports.getAllProducts = async (req, res) => {
     const productList = await productContenedorMongoDB.getAll();
@@ -8,7 +10,15 @@ exports.getAllProducts = async (req, res) => {
 
 exports.getByIdProducts = async (req, res) => {
     const productList = await productContenedorMongoDB.getById(req.params.id);
-    res.json(productList);
+    const carrito = await carritoContenedorMongoDB.getById(req.user)
+    console.log(productList.error == "Producto no encontrado");
+    res.render('pages/index',
+        {
+            user: req.user,
+            lista: productList,
+            carritoId: carrito._id,
+        }
+    );
 };
 
 exports.saveProducts = async (req, res) => {

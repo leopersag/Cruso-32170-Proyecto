@@ -12,7 +12,7 @@ const logger = require ('./log4js')
         return bCrypt.hashSync(password, bCrypt.genSaltSync(10));
     };
 
-const passportConfig = (passport, usersContenedorMongoDB, TEST_MAIL, transporter) => {
+const passportConfig = (passport, usersContenedorMongoDB, TEST_MAIL, transporter, carritoContenedorMongoDB) => {
 
     passport.use('register', new LocalStrategy(
         {
@@ -30,24 +30,34 @@ const passportConfig = (passport, usersContenedorMongoDB, TEST_MAIL, transporter
             try {
                 user = {
                     name: req.body.name,
+                    lastName: req.body.lastName,
                     address: req.body.address,
-                    age: req.body.age,
+                    countryCode: req.body.countryCode,
                     phone: req.body.phone,
-                    avatar: req.file.path,
                     password: createHash(password),
                     email: username
+                }
+                carrito = {
+                    email: username,
+                    address: req.body.address,
+                    productos: [],
                 }
             } catch {
                 return done (null, false);
             }
-            const resultado = await usersContenedorMongoDB.save(user)
+            const resultado = await usersContenedorMongoDB.save(user);
+            const resultadoCarrito = await carritoContenedorMongoDB.save(carrito);
+
             if (resultado == false) {
-                logger.error('Error in SingUp');
+                logger.error('Error en la creación del usuario');
                 return done(null, false);
-            }
+            } else if (resultadoCarrito == false) {
+                logger.error('Error en la creación del carrito');
+                return done(null, false);
+            } 
 
             const mailOptions = {
-                from: 'Leonardo@PerSag.com',
+                from: 'Leonardo@CoderHouse.com',
                 to: TEST_MAIL,
                 subject: 'Nuevo registro',
                 text: JSON.stringify(user),

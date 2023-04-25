@@ -29,6 +29,6 @@ exports.addProductByIdCarrito = async (req,res) => {
 };
 
 exports.delProductFromCartCarrito = async (req,res) => {
-    console.log("Se borra un producto de carrito");
+    console.log(`Se borra el producto ${req.params.id_prod} del carrito ${req.params.id}`);
     res.json(await CarritoContenedorMongoDB.delProductFromCarrt(req.params.id,req.params.id_prod));
 };

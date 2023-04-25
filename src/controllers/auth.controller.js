@@ -2,6 +2,8 @@ const usersContenedor = require('../models/UserContenedorMongoDB');
 const usersContenedorMongoDB = new usersContenedor();
 const carritoContenedor = require('../models/CarritoContenedorMongoDB');
 const carritoContenedorMongoDB = new carritoContenedor();
+const ordenesContenedor = require('../models/OrdenesContenedorMongoDB');
+const ordenesContenedorMongoDB = new ordenesContenedor();
 const productContenedor = require('../models/ProductContenedorMongoDB');
 const productContenedorMongoDB = new productContenedor();
 const logger  = require ('../config/log4js');
@@ -12,7 +14,7 @@ const client = require('twilio')(TWILIO_ACCOUNTSID, TWILIO_AUTH_TOKEN);
 const upload = require('../config/multer');
 const passport = require ('passport');
 const passportConfig = require('../config/passport');
-passportConfig (passport, usersContenedorMongoDB, TEST_MAIL, transporter);
+passportConfig (passport, usersContenedorMongoDB, TEST_MAIL, transporter, carritoContenedorMongoDB);
 
 
 exports.getRegister = (req, res) => {
@@ -52,42 +54,51 @@ exports.getDatos = async (req, res) => {
     req.session.nombre = req.user;
     req.user.contador++;
     let listaProductos = await productContenedorMongoDB.getAll();
-    const usuarios = await usersContenedorMongoDB.getAll();
-    const usuario = usuarios.find((usuario) => usuario.email == req.user);
+    const usuario = await usersContenedorMongoDB.getById(req.user);
+    const carrito = await carritoContenedorMongoDB.getById(req.user);
     res.render('pages/index', 
         {
-            user: usuario.email,
+            user: usuario[0].email,
             lista: listaProductos,
-            avatar: usuario.avatar,
+            carritoId: carrito._id,
         }
     )
 };
 
 exports.getCarrito = async (req, res) => {
-    let listaCarrito = await carritoContenedorMongoDB.getAll();
-    const usuarios = await usersContenedorMongoDB.getAll();
-    const usuario = usuarios.find((usuario) => usuario.email == req.user);
+    const usuario = await usersContenedorMongoDB.getById(req.user);
+    const carrito = await carritoContenedorMongoDB.getById(req.user);
     res.render('pages/carrito',
         {
-            name: usuario.name,
-            user: usuario.email,
-            lista: listaCarrito[0].productos,
-            avatar: usuario.avatar,
+            user: usuario[0].email,
+            lista: carrito.productos,
+            carritoId: carrito._id,
         }
     )
 };
 
 exports.getCompraOut = async (req, res) => {
-    let listaCarrito = await carritoContenedorMongoDB.getAll();
-    const usuarios = await usersContenedorMongoDB.getAll();
-    const usuario = usuarios.find((usuario) => usuario.email == req.user);
+    const usuario = await usersContenedorMongoDB.getById(req.user);
+    const carrito = await carritoContenedorMongoDB.getById(req.user);
+    const ordenes = await ordenesContenedorMongoDB.getAll(); 
+
+    const orden = {
+        items: carrito.productos,
+        orderNumber: ordenes.length+1,
+        timeStamp: new Date(),
+        estado: 'Generada',
+        email: req.user,
+    };
+
+    await ordenesContenedorMongoDB.save(orden);
+    await carritoContenedorMongoDB.vaciarCarrito(carrito._id);
     
     const mailOptions = {
-        from: 'Leonardo@PerSag.com',
+        from: 'Leonardo@CoderHouse.com',
         to: TEST_MAIL,
         subject: `Nuevo pedido de ${usuario.name} (${usuario.email})`,
-        text: JSON.stringify(listaCarrito),
-        html: `<p>${JSON.stringify(listaCarrito)}</p>`
+        text: JSON.stringify(orden),
+        html: `<p>${JSON.stringify(orden)}</p>`
     };
     
     try {
@@ -96,7 +107,7 @@ exports.getCompraOut = async (req, res) => {
         logger.error(error);
     };
 
-    try {
+/*     try {
         client.messages.create({
             body: `Nuevo pedido de ${usuario.name} (${usuario.email})`,
             from: TWILIO_FROM,
@@ -104,8 +115,14 @@ exports.getCompraOut = async (req, res) => {
         })
     } catch (error) {
         logger.error(error)
-    }; 
-    res.render('pages/Auth/compraOut', {user: req.user});
+    };  */
+
+    res.render('pages/Auth/compraOut',
+        {
+            user: req.user,
+            orden: orden.orderNumber,
+        }
+    );
 };
 
 exports.getRoot = (req, res) => {
@@ -115,17 +132,17 @@ exports.getRoot = (req, res) => {
         req.session.contador = 1;
     }
     req.session.contador++;
-    res.redirect('/datos');
+    res.redirect('/productos');
 };
 
 exports.multer = upload.single('avatar');
 
 exports.passportRegister = passport.authenticate('register', {
     failureRedirect: "/failregister",
-    successRedirect: "/datos",
+    successRedirect: "/productos",
 });
 
 exports.passportLogin = passport.authenticate('login', {
     failureRedirect: '/faillogin',
-    successRedirect: '/datos',
+    successRedirect: '/productos',
 });

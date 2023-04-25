@@ -8,7 +8,7 @@ const transporter = createTransport({
     port: 587,
     auth: {
         user: TEST_MAIL,
-        pass: 'ywFkCDVuw36gThTJ3t'
+        pass: 'HxfZk6kqY7f9VQXzjr'
     }
 });
 

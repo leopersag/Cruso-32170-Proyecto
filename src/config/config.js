@@ -9,6 +9,7 @@ const vars = {
     TWILIO_FROM: process.env.TWILIO_FROM,
     TWILIO_TO: process.env.TWILIO_TO,
     TEST_MAIL: process.env.TEST_MAIL,
+    DB_URL: process.env.URL,
 };
 
 module.exports = vars;

@@ -60,6 +60,8 @@ if (process.argv[3] === 'CLUSTER' && cluster.isPrimary) {
         app.use('/mongo/products', productRouterMongoDB);
         const carritoRouterMongoDB = require('./routers/carritoMongoDB');
         app.use('/mongo/carrito', carritoRouterMongoDB);
+        const ordenesRouterMongoDB = require('./routers/ordenesMongoDB');
+        app.use('/mongo/ordenes', ordenesRouterMongoDB);
         const authRouter = require ('./routers/auth.router');
         app.use('/', authRouter);
         /* 

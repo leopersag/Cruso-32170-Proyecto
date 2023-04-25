@@ -24,7 +24,7 @@ class userContenedorMongoDB {
         try {
             await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
             try{
-                const producto = await UsuariosDAO.find({_id: id});
+                const producto = await UsuariosDAO.find({email: id});
                 return producto
             }catch {
                 return {'error': 'Producto no encontrado'};

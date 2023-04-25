@@ -9,15 +9,24 @@
         <%- include('../../partials/scripts'); %>
         <title>Compra finalizada</title>
 </head>
-<body onmouseover="redirecciona()">
+<body>
     <header>
         <%- include('../../partials/header'); %>
     </header>
     
     <main>
-        <div class="text-center p-5 m-5 bg-secondary d-flex justify-content-between align-items-center">
-            <h3 class="text-black"><%= user %>, su pedido ha sido confirmado!!!</h3>
-            <a class="text-white text-decoration-none fw-semibold" href="/">Volver</a>
+        <div class="container-fluid p-4 text-center">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <h2 class="fs-1 mt-4">Felicitaciones <%= user %>!</h2>
+                        <img class="img-fluid w-50" src="https://curso-37545-proyecto.vercel.app/media/shipping1.gif" alt="paquete">
+                        <p class="fs-4 m-0">La orden se generó con el n°: <br><b class="fs-2"><%= orden %></b></p>
+                        <p class="fs-6 mb-4">(Te enviaremos el n° de orden y los datos de tu compra a tu mail)</p>
+                        <a class="btn btn-primary" href="/">Volver al inicio</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
     

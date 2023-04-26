@@ -1,3 +1,4 @@
+<script src="https://cdn.socket.io/4.5.3/socket.io.min.js" integrity="sha384-WPFUvHkB1aHA5TDSZi6xtDgkF0wXJcIIxXhC6h8OT8EH3fC5PWro5pWJ1THjcfEi" crossorigin="anonymous"></script>
 <script>
     function validarPwd() {
         const p1 = document.getElementById("c-password");
@@ -47,5 +48,52 @@
 
         window.location.assign('/carrito');
     }
+
+    //Sockets
+    const socket = io.connect();
+
+    socket.on('conversation', (messages) => {
+
+        const messagesHtml = messages.map ((message) => `
+            <div>
+                <strong class="text-primary">${message.email}</strong> 
+                <span class="text-danger">[${message.timestamp}]: </span> 
+                <i class="text-success"> ${message.mensaje} </i>
+            </div>
+            `).join(' ');
+
+        document.getElementById('messages').innerHTML = messagesHtml;
+       
+        const chat = document.getElementById('chat');
+
+        chat.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const tipo = "usuario";
+            const mensaje = document.getElementById('message').value;
+
+            const date = new Date();
+            const timestamp = `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;               
+            const contador = Math.max(messages.contador)+1;
+            message = {contador, email , tipo, timestamp, mensaje};
+
+            document.getElementById('message').value = "";
+
+            socket.emit('new-message',message);
+        });
+    });
+
+    socket.on('newConversation',(messages) =>{
+
+        const messagesHtml = messages.map ((message) => `
+            <div>
+                <strong class="text-primary">${message.email}</strong> 
+                <span class="text-danger">[${message.timestamp}]: </span> 
+                <i class="text-success"> ${message.mensaje} </i>
+            </div>
+            `).join(' ');
+
+        document.getElementById('messages').innerHTML = messagesHtml;
+    });
 
 </script>

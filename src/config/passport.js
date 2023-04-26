@@ -17,7 +17,7 @@ const passportConfig = (passport, usersContenedorMongoDB, TEST_MAIL, transporter
     passport.use('register', new LocalStrategy(
         {
             passReqToCallback: true,
-            usernameField: "email", // Para usar el campo 'email' cuando llame a 'username'
+            usernameField: "email",
         },
         async (req, username, password, done) => {
             const usuarios = await usersContenedorMongoDB.getAll();
@@ -76,7 +76,7 @@ const passportConfig = (passport, usersContenedorMongoDB, TEST_MAIL, transporter
 
     passport.use('login', new LocalStrategy(
         {
-            usernameField: 'email', // Para usar el campo 'email' cuando llame a 'username'
+            usernameField: 'email',
         },
         async (username, password, done) => {
             const usuarios = await usersContenedorMongoDB.getAll();
@@ -94,7 +94,7 @@ const passportConfig = (passport, usersContenedorMongoDB, TEST_MAIL, transporter
     ));
 
     passport.serializeUser(function(user, done) {
-        done(null, user.email); // Recomendación: en el 2° parámetro usar el user._id (si la persistencia es en una DB)
+        done(null, user.email); 
     });
 
     passport.deserializeUser(async function (useremail,done) {

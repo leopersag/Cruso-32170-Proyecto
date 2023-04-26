@@ -6,6 +6,8 @@ productRouterMongoDB.get('/', productoController.getAllProducts);
 
 productRouterMongoDB.get('/:id', productoController.getByIdProducts);
 
+productRouterMongoDB.get('/category/:category', productoController.getByCategoryProducts);
+
 productRouterMongoDB.post('/', productoController.saveProducts);
 
 productRouterMongoDB.delete('/:id', productoController.deleteByIdProducts);

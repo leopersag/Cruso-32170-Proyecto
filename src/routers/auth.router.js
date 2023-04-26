@@ -21,9 +21,13 @@ authRouter.get('/productos', authController.isAuth, authController.getDatos);
 
 authRouter.get('/productos/:id', authController.isAuth, productoController.getByIdProducts);
 
+authRouter.get('/productos/category/:category', authController.isAuth, productoController.getByCategoryProducts);
+
 authRouter.get('/carrito', authController.isAuth, authController.getCarrito);
 
 authRouter.get('/compraOut', authController.isAuth, authController.getCompraOut);
+
+authRouter.get('/chat', authController.isAuth, authController.getChat);
 
 authRouter.get('/', authController.getRoot);
 

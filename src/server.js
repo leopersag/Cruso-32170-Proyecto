@@ -22,7 +22,6 @@ if (process.argv[3] === 'CLUSTER' && cluster.isPrimary) {
         const cookieParser = require ('cookie-parser');
         const session = require ('./config/session');
         
-        // Inicialización app con express
         const app = express();
 
         // Capturando la información de la URL y el Método de todas las peticiones al servidor
@@ -31,7 +30,7 @@ if (process.argv[3] === 'CLUSTER' && cluster.isPrimary) {
             next();
         });
 
-        const PORT = process.env.PORT || process.argv[2] || 8080; // Railway asigna el puerto en 'process.env.PORT'
+        const PORT = process.env.PORT || process.argv[2] || 8080;
         app.use(express.json());
         app.use(express.urlencoded ({extended: true}));
         app.use(cookieParser());
@@ -40,10 +39,9 @@ if (process.argv[3] === 'CLUSTER' && cluster.isPrimary) {
         app.use(passport.initialize());
         app.use(passport.session());
 
-        //Indica el motor de plantillas a usar (por defecto la carpeta ./views)
         app.set('view engine', 'ejs');
 
-    // Utilización de Routers
+    // Routers
         /*             
         //Router de archivos
         const productRouter = require('./routers/products');
@@ -72,14 +70,41 @@ if (process.argv[3] === 'CLUSTER' && cluster.isPrimary) {
         app.use('/firebase/carrito', carritoRouterFirebase);
         */
 
-    // En caso de que la ruta no esté asignada
+        // En caso de que la ruta no esté asignada
         app.all('*',(req,res) => {
             logger.warn (`URL: "${req.url}" no asignada`);
             res.send({warning: "ruta no encontrada"});
         });
 
-    // Inicialización del server express
-        const server = app.listen(PORT, ()=>{
+    // Websocket
+    
+        const { Server: SocketServer } = require ('socket.io');
+        const { Server: HttpServer } = require ('http');
+        const httpServer = new HttpServer (app);
+        const io = new SocketServer (httpServer);
+
+        io.on('connection',(socket) => {
+            const messageContenedor = require('./models/MensajesContenedorMongoDB');
+            const prueba = new messageContenedor ();
+
+            async function mje() {
+                let message = await prueba.getAll();
+                socket.emit('conversation', message);
+            } 
+            mje();
+            
+            socket.on('new-message',(message) => {
+                const newMje = async (mje) => {
+                    await prueba.save(mje)
+                    let messages = await prueba.getAll();
+                    io.sockets.emit('newConversation', messages);
+                }
+                newMje(message);
+            });
+        });
+
+    // Inicialización del server
+        const server = httpServer.listen(PORT, ()=>{
             console.log(`Servidor Http escuchando en el puerto ${server.address().port}`);
         });
         server.on("error", error => console.log(`Error en servidor ${error}`));

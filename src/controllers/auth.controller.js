@@ -6,6 +6,8 @@ const ordenesContenedor = require('../models/OrdenesContenedorMongoDB');
 const ordenesContenedorMongoDB = new ordenesContenedor();
 const productContenedor = require('../models/ProductContenedorMongoDB');
 const productContenedorMongoDB = new productContenedor();
+const mensajesContenedor = require('../models/MensajesContenedorMongoDB');
+const mensajesContenedorMongoDB = new mensajesContenedor();
 const logger  = require ('../config/log4js');
 const vars = require ('../config/config');
 const { TEST_MAIL, TWILIO_FROM, TWILIO_TO, TWILIO_ACCOUNTSID, TWILIO_AUTH_TOKEN } = vars;
@@ -73,6 +75,16 @@ exports.getCarrito = async (req, res) => {
             user: usuario[0].email,
             lista: carrito.productos,
             carritoId: carrito._id,
+        }
+    )
+};
+
+
+exports.getChat = async (req, res) => {
+    const usuario = await usersContenedorMongoDB.getById(req.user);
+    res.render('pages/chat',
+        {
+            user: usuario[0].email,
         }
     )
 };

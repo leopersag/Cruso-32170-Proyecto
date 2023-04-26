@@ -8,10 +8,24 @@ exports.getAllProducts = async (req, res) => {
     res.json(productList);
 };
 
+exports.getByCategoryProducts = async (req, res) => {
+    const productList = await productContenedorMongoDB.getByCategory(req.params.category);
+    const carrito = await carritoContenedorMongoDB.getById(req.user);
+    if (productList == []){
+        productList = {error: "Carrito no encontrado"}
+    };
+    res.render('pages/index',
+        {
+            user: req.user,
+            lista: productList,
+            carritoId: carrito._id,
+        }
+    );
+};
+
 exports.getByIdProducts = async (req, res) => {
     const productList = await productContenedorMongoDB.getById(req.params.id);
-    const carrito = await carritoContenedorMongoDB.getById(req.user)
-    console.log(productList.error == "Producto no encontrado");
+    const carrito = await carritoContenedorMongoDB.getById(req.user);
     res.render('pages/index',
         {
             user: req.user,

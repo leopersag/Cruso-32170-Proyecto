@@ -36,6 +36,22 @@ class ProductContenedorMongoDB {
         }
     }
 
+    async getByCategory(category) {
+        try {
+            await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
+            try{
+                const producto = await ProductosDAO.find({category: category});
+                return producto
+            }catch {
+                return {'error': 'Categoría no encontrada'};
+            } finally {
+                await mongoose.disconnect();
+            }
+        } catch (error) {
+            console.log(`Error de conexión a la base de datos ${error}`);       
+        }
+    }
+
     async getAll() {
         try {
             await mongoose.connect(URL, {serverSelectionTimeoutMS: 5000});
